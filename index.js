@@ -11,9 +11,8 @@ const port = 3000;
 let tasks = {};
 let completedTasks = [];
 let totalTasksToday = 0;
-let taskHistory = []; // Store timestamp of task creations for statistics
+let taskHistory = [];
 
-// Serve the HTML page
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -21,7 +20,7 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Image Processing Status</title>
+      <title>Image Processing Dashboard</title>
       <script src="https://cdn.tailwindcss.com/3.4.5"></script>
       <style>
         .skeleton {
@@ -38,29 +37,87 @@ app.get('/', (req, res) => {
             background-position: -200% 0;
           }
         }
+
+        .spinner {
+          border: 4px solid rgba(0, 0, 0, 0.1);
+          border-left-color: #6366F1;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
       </style>
     </head>
-    <body class="bg-gray-100 text-gray-800">
+    <body class="bg-gradient-to-br from-gray-50 to-indigo-200 min-h-screen flex flex-col items-center justify-center font-sans">
       <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Image Processing Dashboard</h1>
-        <div id="stats" class="bg-white p-4 rounded-lg shadow mb-4">
-          <p class="font-bold text-gray-700">Running Tasks: <span id="running-tasks-count">0</span></p>
-          <p class="font-bold text-gray-700">Total Tasks Today: <span id="total-tasks-today">0</span></p>
-          <p class="font-bold text-gray-700">Tasks in Last Hour: <span id="tasks-last-hour">0</span></p>
-          <p class="font-bold text-gray-700">Tasks in Last Minute: <span id="tasks-last-minute">0</span></p>
+        <h1 class="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Image Processing Dashboard</h1>
+
+        <div id="stats" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-indigo-50 rounded-lg shadow">
+              <p class="font-semibold text-indigo-700">Running Tasks</p>
+              <p id="running-tasks-count" class="text-3xl font-bold text-indigo-900">0</p>
+            </div>
+            <div class="p-4 bg-indigo-50 rounded-lg shadow">
+              <p class="font-semibold text-indigo-700">Total Tasks Today</p>
+              <p id="total-tasks-today" class="text-3xl font-bold text-indigo-900">0</p>
+            </div>
+            <div class="p-4 bg-indigo-50 rounded-lg shadow">
+              <p class="font-semibold text-indigo-700">Tasks Last Hour</p>
+              <p id="tasks-last-hour" class="text-3xl font-bold text-indigo-900">0</p>
+            </div>
+            <div class="p-4 bg-indigo-50 rounded-lg shadow">
+              <p class="font-semibold text-indigo-700">Tasks Last Minute</p>
+              <p id="tasks-last-minute" class="text-3xl font-bold text-indigo-900">0</p>
+            </div>
+          </div>
         </div>
+
         <div id="status-container" class="space-y-4">
           <div class="skeleton w-full h-24 rounded-lg"></div>
           <div class="skeleton w-full h-24 rounded-lg"></div>
           <div class="skeleton w-full h-24 rounded-lg"></div>
         </div>
-        <div id="old-requests" class="space-y-4 mt-8">
-          <h2 class="text-xl font-semibold text-gray-700">Old Requests</h2>
+
+        <div id="old-requests" class="space-y-4 mt-10">
+          <h2 class="text-2xl font-bold text-gray-700 mb-4">Completed Tasks</h2>
           <div class="skeleton w-full h-24 rounded-lg"></div>
           <div class="skeleton w-full h-24 rounded-lg"></div>
           <div class="skeleton w-full h-24 rounded-lg"></div>
         </div>
       </div>
+
+      <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-xl w-full relative">
+          <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onclick="closeModal()">
+            &times;
+          </button>
+          <h3 class="text-xl font-bold text-gray-700 mb-4">Task Details</h3>
+          <p class="text-gray-700 mb-2"><span class="font-semibold">Task ID:</span> <span id="modal-task-id"></span></p>
+          <div class="mb-2">
+            <p class="text-gray-700 font-semibold">Source Image:</p>
+            <img id="modal-source-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Source Image">
+            <a href="#" id="modal-source-url" class="text-indigo-500 text-sm mt-1 block truncate"></a>
+          </div>
+          <div class="mb-2">
+            <p class="text-gray-700 font-semibold">Face Image:</p>
+            <img id="modal-face-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Face Image">
+            <a href="#" id="modal-face-url" class="text-indigo-500 text-sm mt-1 block truncate"></a>
+          </div>
+          <div class="mb-4">
+            <p class="text-gray-700 font-semibold">Result Image:</p>
+            <img id="modal-result-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Result Image">
+          </div>
+          <button class="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+
       <script>
         const statusContainer = document.getElementById('status-container');
         const oldRequestsContainer = document.getElementById('old-requests');
@@ -68,6 +125,13 @@ app.get('/', (req, res) => {
         const totalTasksTodayElem = document.getElementById('total-tasks-today');
         const tasksLastHourElem = document.getElementById('tasks-last-hour');
         const tasksLastMinuteElem = document.getElementById('tasks-last-minute');
+        const modal = document.getElementById('modal');
+        const modalTaskId = document.getElementById('modal-task-id');
+        const modalSourceImage = document.getElementById('modal-source-image');
+        const modalSourceUrl = document.getElementById('modal-source-url');
+        const modalFaceImage = document.getElementById('modal-face-image');
+        const modalFaceUrl = document.getElementById('modal-face-url');
+        const modalResultImage = document.getElementById('modal-result-image');
 
         function updateStats(stats) {
           runningTasksCountElem.textContent = stats.running;
@@ -76,11 +140,32 @@ app.get('/', (req, res) => {
           tasksLastMinuteElem.textContent = stats.lastMinute;
         }
 
+        function openModal(task) {
+          modalTaskId.textContent = task.task_id;
+          modalSourceImage.src = task.source_image;
+          modalSourceUrl.href = task.source_image;
+          modalSourceUrl.textContent = task.source_image;
+          modalFaceImage.src = task.face_image;
+          modalFaceUrl.href = task.face_image;
+          modalFaceUrl.textContent = task.face_image;
+          modalResultImage.src = task.result_image ? task.result_image : 'https://via.placeholder.com/150?text=Processing';
+          modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+          modal.classList.add('hidden');
+        }
+
         function createTaskElement(task) {
-          return '<div class="bg-white shadow p-4 rounded-lg transition ease-in-out duration-200">' +
-                  '<p class="font-medium text-green-600">Task ID: ' + task.task_id + '</p>' +
-                  '<p>Status: ' + task.status + '</p>' +
-                  '</div>';
+          const timeTaken = (Date.now() - task.startTime) / 1000;
+          return '<div class="bg-white shadow p-4 rounded-lg transition ease-in-out duration-200 flex justify-between items-center">' +
+                  '<div>' +
+                    '<p class="font-medium text-indigo-600 cursor-pointer hover:underline" onclick="openModal(' + encodeURIComponent(JSON.stringify(task)) + ')">Task ID: ' + task.task_id + '</p>' +
+                    '<p>Status: ' + task.status + '</p>' +
+                    '<p>Time Taken: ' + timeTaken.toFixed(2) + ' seconds</p>' +
+                  '</div>' +
+                  (task.status === 'Processing' ? '<div class="spinner"></div>' : '') +
+                 '</div>';
         }
 
         function updateTaskList(container, tasks) {
@@ -182,7 +267,13 @@ async function processImages(targetImagePath, faceImagePath) {
     console.log('Face generation task ID:', taskId);
 
     const startTime = Date.now();
-    tasks[taskId] = { task_id: taskId, status: 'Processing', startTime };
+    tasks[taskId] = {
+      task_id: taskId,
+      status: 'Processing',
+      startTime,
+      source_image: targetImageUrl,
+      face_image: faceImageUrl,
+    };
 
     totalTasksToday++;
     taskHistory.push(startTime);
@@ -193,6 +284,7 @@ async function processImages(targetImagePath, faceImagePath) {
       statusResponse = await checkStatus(taskId);
       if (statusResponse.data.status === 2) {
         tasks[taskId].status = 'Completed';
+        tasks[taskId].result_image = statusResponse.data.result_image;
         completedTasks.push(tasks[taskId]);
         delete tasks[taskId];
       } else {
@@ -207,7 +299,6 @@ async function processImages(targetImagePath, faceImagePath) {
 
     console.log('Final status:', statusResponse);
     return statusResponse;
-
   } catch (error) {
     console.error('Error processing images:', error.message);
     throw error;
@@ -244,7 +335,6 @@ app.get('/process', async (req, res) => {
     const targetImagePath = path.join(__dirname, targetImageName);
     const faceImagePath = path.join(__dirname, faceImageName);
 
-    // Download images from URLs
     const downloadImage = async (url, filepath) => {
       const response = await axios({
         url,
