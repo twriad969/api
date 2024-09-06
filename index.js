@@ -4,7 +4,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-
+const cookies = "_ga=GA1.1.2120117660.1722196509; _ga_9YKJW15D56=GS1.1.1723197248.8.0.1723197251.0.0.0; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; crisp-client%2Fsocket%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=0";
 const app = express();
 const port = 3000;
 
@@ -12,189 +12,6 @@ let tasks = {};
 let completedTasks = [];
 let totalTasksToday = 0;
 let taskHistory = [];
-
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Image Processing Dashboard</title>
-      <script src="https://cdn.tailwindcss.com/3.4.5"></script>
-      <style>
-        .skeleton {
-          background: linear-gradient(90deg, rgba(165, 165, 165, 0.1) 25%, rgba(165, 165, 165, 0.2) 50%, rgba(165, 165, 165, 0.1) 75%);
-          background-size: 200% 100%;
-          animation: skeleton-loading 1.5s infinite;
-        }
-
-        @keyframes skeleton-loading {
-          0% {
-            background-position: 200% 0;
-          }
-          100% {
-            background-position: -200% 0;
-          }
-        }
-
-        .spinner {
-          border: 4px solid rgba(0, 0, 0, 0.1);
-          border-left-color: #6366F1;
-          border-radius: 50%;
-          width: 36px;
-          height: 36px;
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      </style>
-    </head>
-    <body class="bg-gradient-to-br from-gray-50 to-indigo-200 min-h-screen flex flex-col items-center justify-center font-sans">
-      <div class="container mx-auto p-4">
-        <h1 class="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Image Processing Dashboard</h1>
-
-        <div id="stats" class="bg-white p-6 rounded-lg shadow-lg mb-8">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="p-4 bg-indigo-50 rounded-lg shadow">
-              <p class="font-semibold text-indigo-700">Running Tasks</p>
-              <p id="running-tasks-count" class="text-3xl font-bold text-indigo-900">0</p>
-            </div>
-            <div class="p-4 bg-indigo-50 rounded-lg shadow">
-              <p class="font-semibold text-indigo-700">Total Tasks Today</p>
-              <p id="total-tasks-today" class="text-3xl font-bold text-indigo-900">0</p>
-            </div>
-            <div class="p-4 bg-indigo-50 rounded-lg shadow">
-              <p class="font-semibold text-indigo-700">Tasks Last Hour</p>
-              <p id="tasks-last-hour" class="text-3xl font-bold text-indigo-900">0</p>
-            </div>
-            <div class="p-4 bg-indigo-50 rounded-lg shadow">
-              <p class="font-semibold text-indigo-700">Tasks Last Minute</p>
-              <p id="tasks-last-minute" class="text-3xl font-bold text-indigo-900">0</p>
-            </div>
-          </div>
-        </div>
-
-        <div id="status-container" class="space-y-4">
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-        </div>
-
-        <div id="old-requests" class="space-y-4 mt-10">
-          <h2 class="text-2xl font-bold text-gray-700 mb-4">Completed Tasks</h2>
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-          <div class="skeleton w-full h-24 rounded-lg"></div>
-        </div>
-      </div>
-
-      <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-xl w-full relative">
-          <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onclick="closeModal()">
-            &times;
-          </button>
-          <h3 class="text-xl font-bold text-gray-700 mb-4">Task Details</h3>
-          <p class="text-gray-700 mb-2"><span class="font-semibold">Task ID:</span> <span id="modal-task-id"></span></p>
-          <div class="mb-2">
-            <p class="text-gray-700 font-semibold">Source Image:</p>
-            <img id="modal-source-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Source Image">
-            <a href="#" id="modal-source-url" class="text-indigo-500 text-sm mt-1 block truncate"></a>
-          </div>
-          <div class="mb-2">
-            <p class="text-gray-700 font-semibold">Face Image:</p>
-            <img id="modal-face-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Face Image">
-            <a href="#" id="modal-face-url" class="text-indigo-500 text-sm mt-1 block truncate"></a>
-          </div>
-          <div class="mb-4">
-            <p class="text-gray-700 font-semibold">Result Image:</p>
-            <img id="modal-result-image" class="w-full h-auto rounded-lg mt-2" src="" alt="Result Image">
-          </div>
-          <button class="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600" onclick="closeModal()">Close</button>
-        </div>
-      </div>
-
-      <script>
-        const statusContainer = document.getElementById('status-container');
-        const oldRequestsContainer = document.getElementById('old-requests');
-        const runningTasksCountElem = document.getElementById('running-tasks-count');
-        const totalTasksTodayElem = document.getElementById('total-tasks-today');
-        const tasksLastHourElem = document.getElementById('tasks-last-hour');
-        const tasksLastMinuteElem = document.getElementById('tasks-last-minute');
-        const modal = document.getElementById('modal');
-        const modalTaskId = document.getElementById('modal-task-id');
-        const modalSourceImage = document.getElementById('modal-source-image');
-        const modalSourceUrl = document.getElementById('modal-source-url');
-        const modalFaceImage = document.getElementById('modal-face-image');
-        const modalFaceUrl = document.getElementById('modal-face-url');
-        const modalResultImage = document.getElementById('modal-result-image');
-
-        function updateStats(stats) {
-          runningTasksCountElem.textContent = stats.running;
-          totalTasksTodayElem.textContent = stats.totalToday;
-          tasksLastHourElem.textContent = stats.lastHour;
-          tasksLastMinuteElem.textContent = stats.lastMinute;
-        }
-
-        function openModal(task) {
-          modalTaskId.textContent = task.task_id;
-          modalSourceImage.src = task.source_image;
-          modalSourceUrl.href = task.source_image;
-          modalSourceUrl.textContent = task.source_image;
-          modalFaceImage.src = task.face_image;
-          modalFaceUrl.href = task.face_image;
-          modalFaceUrl.textContent = task.face_image;
-          modalResultImage.src = task.result_image ? task.result_image : 'https://via.placeholder.com/150?text=Processing';
-          modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-          modal.classList.add('hidden');
-        }
-
-        function createTaskElement(task) {
-          const timeTaken = (Date.now() - task.startTime) / 1000;
-          return '<div class="bg-white shadow p-4 rounded-lg transition ease-in-out duration-200 flex justify-between items-center">' +
-                  '<div>' +
-                    '<p class="font-medium text-indigo-600 cursor-pointer hover:underline" onclick="openModal(' + encodeURIComponent(JSON.stringify(task)) + ')">Task ID: ' + task.task_id + '</p>' +
-                    '<p>Status: ' + task.status + '</p>' +
-                    '<p>Time Taken: ' + timeTaken.toFixed(2) + ' seconds</p>' +
-                  '</div>' +
-                  (task.status === 'Processing' ? '<div class="spinner"></div>' : '') +
-                 '</div>';
-        }
-
-        function updateTaskList(container, tasks) {
-          container.innerHTML = ''; // Clear previous content
-          tasks.forEach(task => {
-            container.innerHTML += createTaskElement(task);
-          });
-        }
-
-        async function fetchStatus() {
-          try {
-            const response = await fetch('/status');
-            const data = await response.json();
-            updateStats(data.stats);
-            updateTaskList(statusContainer, data.runningTasks);
-            updateTaskList(oldRequestsContainer, data.oldTasks);
-          } catch (error) {
-            console.error('Error fetching status:', error.message);
-          }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-          setInterval(fetchStatus, 1000);
-        });
-      </script>
-    </body>
-    </html>
-  `);
-});
 
 const formatErrorResponse = (error) => {
   return {
@@ -204,15 +21,12 @@ const formatErrorResponse = (error) => {
 };
 
 async function uploadImage(imagePath) {
-  const form = new FormData();
-  form.append('file', fs.createReadStream(imagePath));
+  const form = new FormData(); // Create a new instance of FormData
+  form.append('file', fs.createReadStream(imagePath)); // Add file stream to form
 
   try {
     const response = await axios.post('https://aifaceswap.io/api/upload_img', form, {
-      headers: {
-        ...form.getHeaders(),
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-      },
+      headers: form.getHeaders(), // Use form-data's getHeaders method
     });
     return response.data.data;
   } catch (error) {
@@ -220,15 +34,33 @@ async function uploadImage(imagePath) {
   }
 }
 
-async function generateFace(sourceImage, faceImage) {
-  const data = { source_image: sourceImage, face_image: faceImage };
+async function generateFaceSwap(sourceImageUrl, faceImageUrl) {
+  const data = {
+    source_image: sourceImageUrl,
+    face_image: faceImageUrl,
+  };
 
   try {
     const response = await axios.post('https://aifaceswap.io/api/generate_face', data, {
       headers: {
-        'content-type': 'application/json',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-      },
+          "accept": "application/json, text/plain, */*",
+          "accept-language": "en-US,en;q=0.9",
+          "cache-control": "no-cache",
+          "content-type": "application/json",
+          "pragma": "no-cache",
+          "priority": "u=1, i",
+          "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-code": "1725647251711", // Replace with a valid x-code if needed
+          "x-fp": "92e9a897c24996744646b8b6b69761a5", // Replace with valid fingerprint
+          "cookie": cookies, // Added the cookie header here
+          "Referer": "https://aifaceswap.io/",
+          "Referrer-Policy": "strict-origin-when-cross-origin"
+        },
     });
     return response.data.data.task_id;
   } catch (error) {
@@ -243,7 +75,6 @@ async function checkStatus(taskId) {
     const response = await axios.post('https://aifaceswap.io/api/check_status', data, {
       headers: {
         'content-type': 'application/json',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
       },
     });
     return response.data;
@@ -263,7 +94,7 @@ async function processImages(targetImagePath, faceImagePath) {
     console.log('Face image uploaded:', faceImageUrl);
 
     console.log('Generating face swap...');
-    const taskId = await generateFace(targetImageUrl, faceImageUrl);
+    const taskId = await generateFaceSwap(targetImageUrl, faceImageUrl);
     console.log('Face generation task ID:', taskId);
 
     const startTime = Date.now();
@@ -293,7 +124,7 @@ async function processImages(targetImagePath, faceImagePath) {
       console.log('Current status:', statusResponse);
 
       if (statusResponse.data.status !== 2) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     } while (statusResponse.data.status !== 2);
 
@@ -310,8 +141,8 @@ function calculateStats() {
   const oneHourAgo = now - 3600000;
   const oneMinuteAgo = now - 60000;
 
-  const lastHourCount = taskHistory.filter(timestamp => timestamp >= oneHourAgo).length;
-  const lastMinuteCount = taskHistory.filter(timestamp => timestamp >= oneMinuteAgo).length;
+  const lastHourCount = taskHistory.filter((timestamp) => timestamp >= oneHourAgo).length;
+  const lastMinuteCount = taskHistory.filter((timestamp) => timestamp >= oneMinuteAgo).length;
 
   return {
     running: Object.keys(tasks).length,
@@ -341,9 +172,7 @@ app.get('/process', async (req, res) => {
         responseType: 'stream',
       });
       return new Promise((resolve, reject) => {
-        response.data.pipe(fs.createWriteStream(filepath))
-          .on('finish', resolve)
-          .on('error', reject);
+        response.data.pipe(fs.createWriteStream(filepath)).on('finish', resolve).on('error', reject);
       });
     };
 
