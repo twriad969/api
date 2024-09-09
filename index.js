@@ -43,24 +43,25 @@ async function generateFaceSwap(sourceImageUrl, faceImageUrl) {
   try {
     const response = await axios.post('https://aifaceswap.io/api/generate_face', data, {
       headers: {
-          "accept": "application/json, text/plain, */*",
-          "accept-language": "en-US,en;q=0.9",
-          "cache-control": "no-cache",
-          "content-type": "application/json",
-          "pragma": "no-cache",
-          "priority": "u=1, i",
-          "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": "\"Windows\"",
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "x-code": "1725647251711", // Replace with a valid x-code if needed
-          "x-fp": "92e9a897c24996744646b8b6b69761a5", // Replace with valid fingerprint
-          "cookie": cookies, // Added the cookie header here
-          "Referer": "https://aifaceswap.io/",
-          "Referrer-Policy": "strict-origin-when-cross-origin"
-        },
+              "accept": "application/json, text/plain, */*",
+              "accept-language": "en-US,en;q=0.9",
+              "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU5NzcyNjAsInN1YiI6Imdvb2dsZSAxNTU4NCB0d3JpYWQ5NkBnbWFpbC5jb20ifQ.VPpQxNVWslJtsXyiWUFpRojNtGtJ5lDCg9yOcEE9P2M",
+              "cache-control": "no-cache",
+              "content-type": "application/json",
+              "pragma": "no-cache",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "same-origin",
+              "x-code": "1725912783941",
+              "x-fp": "92e9a897c24996744646b8b6b69761a5",
+              "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; _ga_9YKJW15D56=GS1.1.1725912422.9.0.1725912422.0.0.0",
+              "Referer": "https://aifaceswap.io/",
+              "Referrer-Policy": "strict-origin-when-cross-origin"
+            },
     });
     return response.data.data.task_id;
   } catch (error) {
