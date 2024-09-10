@@ -4,7 +4,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const cookies = "_ga=GA1.1.2120117660.1722196509; _ga_9YKJW15D56=GS1.1.1723197248.8.0.1723197251.0.0.0; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; crisp-client%2Fsocket%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=0";
+
 const app = express();
 const port = 3000;
 
@@ -34,6 +34,11 @@ async function uploadImage(imagePath) {
   }
 }
 
+// Function to generate a random "x-code" value
+function generateRandomXCode() {
+  return Math.floor(Math.random() * 10000000000000); // Random 13-digit number
+}
+
 async function generateFaceSwap(sourceImageUrl, faceImageUrl) {
   const data = {
     source_image: sourceImageUrl,
@@ -41,27 +46,29 @@ async function generateFaceSwap(sourceImageUrl, faceImageUrl) {
   };
 
   try {
+    const randomXCode = generateRandomXCode(); // Generate a new random "x-code" for every request
+
     const response = await axios.post('https://aifaceswap.io/api/generate_face', data, {
       headers: {
-    "accept": "application/json, text/plain, */*",
-    "accept-language": "en-US,en;q=0.9",
-    "cache-control": "no-cache",
-    "content-type": "application/json",
-    "pragma": "no-cache",
-    "priority": "u=1, i",
-    "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "theme-version": "sFmBWegBiacLhmroBE6oN6u2gafc7e+1U2UrsLBXQqDSglfGGUCZtbXnMgqSII+R",
-    "x-code": "1725995672501",
-    "x-fp": "92e9a897c24996744646b8b6b69761a5",
-    "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; _ga_9YKJW15D56=GS1.1.1725995641.10.0.1725995641.0.0.0",
-    "Referer": "https://aifaceswap.io/",
-    "Referrer-Policy": "strict-origin-when-cross-origin"
-  },
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        "pragma": "no-cache",
+        "priority": "u=1, i",
+        "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "theme-version": "sFmBWegBiacLhmroBE6oN6u2gafc7e+1U2UrsLBXQqDSglfGGUCZtbXnMgqSII+R",
+        "x-code": randomXCode, // Use the dynamically generated "x-code"
+        "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; _ga_9YKJW15D56=GS1.1.1725995641.10.0.1725995641.0.0.0",
+        "Referer": "https://aifaceswap.io/",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      },
+    });
     return response.data.data.task_id;
   } catch (error) {
     throw formatErrorResponse(error);
