@@ -50,24 +50,25 @@ async function generateFaceSwap(sourceImageUrl, faceImageUrl) {
 
     const response = await axios.post('https://aifaceswap.io/api/generate_face', data, {
       headers: {
-        "accept": "application/json, text/plain, */*",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "content-type": "application/json",
-        "pragma": "no-cache",
-        "priority": "u=1, i",
-        "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "\"Windows\"",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "theme-version": "sFmBWegBiacLhmroBE6oN6u2gafc7e+1U2UrsLBXQqDSglfGGUCZtbXnMgqSII+R",
-        "x-code": randomXCode, // Use the dynamically generated "x-code"
-        "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; _ga_9YKJW15D56=GS1.1.1725995641.10.0.1725995641.0.0.0",
-        "Referer": "https://aifaceswap.io/",
-        "Referrer-Policy": "strict-origin-when-cross-origin"
-      },
+          "accept": "application/json, text/plain, */*",
+          "accept-language": "en-US,en;q=0.9",
+          "cache-control": "no-cache",
+          "content-type": "application/json",
+          "pragma": "no-cache",
+          "priority": "u=1, i",
+          "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "theme-version": "YKst+D++sJLC0LhUA9g3R0CujAN2RVu7mgKqfbT71dGPf2Y5p+eeGRg8HELSb9DF",
+          "x-code": "1726089032752",
+          "x-fp": "92e9a897c24996744646b8b6b69761a5",
+          "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; cf_clearance=TcZiXMkdRZPM3btTtbYT.gnU9MLfPYqmKPq5Y3oL1ng-1726088965-1.2.1.1-hDWizQsr8ad8hVwgx6.HCx1nvlIucXcAlxdiB.CtBc2qGy2x.FMzfj7TR4Qgci9Slj5me_Eg8LjiQlgs0dplgaBzruvATGKuJD7lLfMuYz_xfmZYBCTEUjDhhRqemn03Mth4dEXZAH9Gtv1Ep06_uMQkY7__St.raLgIf8FmgtLJpprqOs8B8IaxK4kQFGlrrhckuKsIhjQQyYLzsoOCj97UgicK005MVpRlHd5b8eYmfSmCBt4_TeXnlYLYJtdaEpnFQohcLUeX6nkiydzZkeSlr4b41a6bGKUgjCvuSXd4rG8OM2PpF81Y9kiIGYPHHAw2zlVcMKSCI9zE7j_GPXc5gwGQ9uQwU7hXM44TJ9kSB6pA1xuqVeqtcH8CG8_d; _ga_9YKJW15D56=GS1.1.1726088966.11.0.1726088966.0.0.0",
+          "Referer": "https://aifaceswap.io/",
+          "Referrer-Policy": "strict-origin-when-cross-origin"
+        },
     });
     return response.data.data.task_id;
   } catch (error) {
