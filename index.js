@@ -26,7 +26,23 @@ async function uploadImage(imagePath) {
 
   try {
     const response = await axios.post('https://aifaceswap.io/api/upload_img', form, {
-      headers: form.getHeaders(), // Use form-data's getHeaders method
+      headers: {
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "en-US,en;q=0.9",
+    "cache-control": "no-cache",
+    "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryCgVQBQ2BQJw6i82C",
+    "pragma": "no-cache",
+    "priority": "u=1, i",
+    "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "cookie": "_ga=GA1.1.2120117660.1722196509; crisp-client%2Fsession%2Fae41150c-fed2-46d0-8016-7fe02b4760fa=session_3553698c-4ce3-4ae3-9f63-22b4192b55c6; g_state={\"i_l\":0}; _ga_9YKJW15D56=GS1.1.1726088966.11.1.1726089728.0.0.0; cf_clearance=pH9940lN39cbjsVbEpR79hrW1fOecShoLCwxGb9Tx_c-1726089728-1.2.1.1-F9VxXPMkmvLk0REmS6C3Uy6.EZc29R7DXeUYGIZjgL4jcznSqaU01KbjJH7bDJE3.pGbCaIoU9wbUO0T.LqYfuv0N5KvvXnRZ7PonxFE9xYqTWSXCRUuy9FuiYVGDAtWcR_ehm.yL.4LuGPHio.HcCVt.ZDIJGP4QNIncWS2Fiw4rMGDA8v7fOcR9ws0NLYA7gsnqKKxt.RpzAqSsOijT3.9O2cCs_LXmrQXBLlV2tedyHfZHp95gFuG2xZSoWUzGkkDMUdML56hgX2BNFblJUfJnvKT1j4Et0avMfHc1dVqjtfoIBV2VPN.NFeboPWx8_jfR5ME.1dUXbrfbrZv8P6VU.dMmR_8txS9KyWd1mv._gL.Zb9weQFMtBnhMpST",
+    "Referer": "https://aifaceswap.io/",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+      },
     });
     return response.data.data;
   } catch (error) {
